@@ -9,10 +9,14 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      GITHUB_ACTOR: ${{ github.actor }}
     steps:
       - name: Checkout Community Agent
         uses: actions/checkout@v4
@@ -40,6 +44,13 @@ jobs:
           ref: main
           path: tavall-logging
 
+      - name: Checkout canonical Tavall architecture tests
+        uses: actions/checkout@v4
+        with:
+          repository: TavallStudios/Tavall-Architecture-Tests
+          ref: working/modularize-architecture-tests-20260907
+          path: Tavall-Architecture-Tests
+
       - name: Checkout standalone Strands bridge
         uses: actions/checkout@v4
         with:
@@ -62,6 +73,16 @@ jobs:
         with:
           gradle-version: "9.1.0"
 
+      - name: Validate and publish selected canonical architecture-test modules locally
+        working-directory: Tavall-Architecture-Tests
+        run: |
+          ./gradlew --no-daemon \
+            :modules:core:check :modules:core:publishToMavenLocal \
+            :modules:patterns:check :modules:patterns:publishToMavenLocal \
+            :modules:di:check :modules:di:publishToMavenLocal \
+            :modules:runtime:check :modules:runtime:publishToMavenLocal \
+            :gradle-plugin:check :gradle-plugin:publishToMavenLocal
+
       - name: Validate shared Function Catalog provider
         working-directory: function-catalog
         run: ./gradlew --no-daemon clean check publishToMavenLocal stageRuntime
@@ -78,6 +99,6 @@ jobs:
           echo "STRANDS_BRIDGE_INTEGRATION_NODE=$(command -v node)" >> "$GITHUB_ENV"
           echo "STRANDS_BRIDGE_INTEGRATION_ENTRYPOINT=${GITHUB_WORKSPACE}/strands-bridge/dist/mcp/main.js" >> "$GITHUB_ENV"
 
-      - name: Validate Java backend and physical Strands round trip
+      - name: Validate Java backend, canonical architecture, and physical Strands round trip
         working-directory: Community-Agent
         run: gradle --no-daemon -Dstrands.bridge.integration.required=true clean test build
