@@ -1,6 +1,8 @@
 package org.tavall.community.runtime;
 
+import org.tavall.ai.agent.AIAgentExecutionResult;
 import org.tavall.ai.agent.strands.StrandsAgentProvider;
+import org.tavall.community.handler.CommunityAgentInvocationHandler;
 import org.tavall.dependency.maps.DependencyMap;
 
 import java.util.Objects;
@@ -22,6 +24,13 @@ public final class CommunityApplicationRuntime implements AutoCloseable {
 
     public int port() {
         return mcpRuntime.port();
+    }
+
+    public AIAgentExecutionResult invoke(String request) {
+        if (closed.get()) {
+            throw new IllegalStateException("Discord Manager runtime is closed.");
+        }
+        return new CommunityAgentInvocationHandler().invoke(request);
     }
 
     @Override
