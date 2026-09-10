@@ -1,189 +1,226 @@
 # Discord Manager (Community Agent)
 
-Discord Manager is a Strands-powered private control plane for operating one Discord community from an authenticated MCP client or the CLI.
+Discord Manager is a Java-first private control plane for operating one Discord community with Strands reasoning behind an MCP boundary.
 
-The Discord bot is intentionally **not** a public AI chatbot. Ordinary Discord messages are observations, never operator instructions. Trusted Discord prompting is disabled by default and can only be enabled from machine/operator configuration. One running configuration observes and operates exactly one configured Discord guild. Gateway events from other guilds are ignored, and channel/thread reads or mutations are verified against the configured guild before Discord receives the operation.
+The product architecture is intentionally split:
 
-## What is runnable in this release
+```text
+ChatGPT / Claude / Codex / Web / CLI
+                |
+         product control surface
+                |
+      Community Agent Java runtime
+  policy / approvals / audit / Discord / state
+        Tavall DI + Function Catalog
+                |
+          agent-runtime SPI
+                |
+       standalone Strands bridge
+             Node / TS
+                |
+            Strands SDK
+                |
+       authorized Java MCP view
+                |
+      Community Agent capabilities
+```
 
-- Read the configured Discord guild and its channels through the typed Discord REST boundary.
-- Create signed, expiring `PROPOSE` records without giving the internal agent an approval tool.
-- Approve one supported typed action (`send_message`) from the authenticated operator MCP surface.
-- Record proposal transitions in a private append-only JSONL file and claim before the external effect.
-- Start a real Strands runtime through the shared bridge for a one-shot request; the runtime discovers the private internal MCP surface.
-- Run an installation wizard, a token-safe doctor, and a loopback-only HTTP server.
+**Java owns the application, authority, deterministic capabilities, policy, state, and MCP publication. Strands owns agent/model/tool-loop execution. MCP joins the two runtimes.**
 
-The repository also contains the reviewed Discord Manager design for the remaining gateway, moderation, events, support, and worker capabilities. Those capabilities are not represented as physically passed in this release until a real Discord bot and development guild are configured.
+The Discord bot is deliberately not a public AI chatbot. Ordinary Discord content is observation data, never instruction authority. Trusted Discord prompting is disabled by default and may only be enabled through machine/operator-owned configuration.
+
+## Current runnable scope
+
+The authoritative root Java runtime can:
+
+- load the existing version-1 `~/.community-agent/config.json` configuration;
+- install a Discord guild configuration with private generated control/signing secrets;
+- run Discord installation diagnostics without serializing the resolved bot token;
+- read the configured Discord guild/channels through a focused Java Discord gateway;
+- expose observations to the agent as `untrusted_observation` data;
+- create signed, expiring proposals;
+- list and approve supported proposals through the operator surface;
+- execute the currently supported deterministic `send_message` action only after the approval boundary;
+- expose separate authenticated `/mcp/agent` and `/mcp/operator` Streamable HTTP MCP endpoints through Tavall Function Catalog;
+- invoke Strands through the standalone `tjXJNOOBIE/strands-bridge` MCP runtime;
+- publish only the explicitly authorized Java Function Catalog view back to Strands;
+- close MCP, Strands, and DI-owned runtime resources in reverse order.
+
+The model-facing view is hard-limited to `community_observe` and `community_propose`. `operator_approve`, proposal listing, and product-level invocation are not published into the Strands tool view.
+
+Broader Discord Manager behavior designed during the hackathon, including gateway-driven automation, additional moderation/events/support operations, subscription workers, and the former local TS dashboard/API, is preserved under `legacy/typescript/` as migration/reference evidence. That directory is **not** an authoritative product runtime. Useful behavior must be ported into the Java-owned architecture before it is claimed as current.
+
+## Requirements
+
+- Java 25
+- Gradle 9.1+ for a source checkout
+- Node.js 22+ only for the standalone Strands bridge process
+- a built checkout/install of `tjXJNOOBIE/strands-bridge`
+
+The Community Agent itself does not embed or import the Strands npm package.
+
+## Build
+
+During the migration PR, local source composition can include sibling checkouts of the unmerged shared Java dependencies:
+
+```text
+../function-catalog
+../tavall-di
+../tavall-logging
+```
+
+Then build the Java application:
+
+```bash
+gradle --no-daemon clean test build
+gradle --no-daemon installDist
+```
+
+CI additionally validates the complete Function Catalog provider and a physical Java -> Strands -> Java MCP round trip.
+
+## Build the standalone Strands service
+
+From `tjXJNOOBIE/strands-bridge`:
+
+```bash
+npm ci --ignore-scripts
+npm run check:real
+npm run build
+```
+
+Configure Community Agent with absolute runtime paths:
+
+```bash
+export COMMUNITY_AGENT_STRANDS_NODE="$(command -v node)"
+export COMMUNITY_AGENT_STRANDS_ENTRYPOINT="/absolute/path/to/strands-bridge/dist/mcp/main.js"
+```
+
+The Java provider launches the bridge with an explicit sanitized environment. Product secrets such as the Discord bot token, operator token, and proposal-signing secret are not inherited by the Strands process by default.
 
 ## Install
 
-Node.js 22+ is required.
+After `gradle installDist`, the generated application launcher is:
 
 ```bash
-mkdir community-manager-consumer && cd community-manager-consumer
-npm init -y
-npm install /path/to/tjxjnoobie-community-agent-0.1.0.tgz
-npx --no-install community-agent install
+./build/install/community-agent/bin/community-agent
 ```
 
-For a source checkout, run `npm install`, `npm run build`, and use `node dist/cli/main.js` instead. The scoped npm name is retained in package metadata, but the supplied registry identity does not own the `@tjxjnoobie` scope, so this release is currently consumed from its generated tarball or a GitHub checkout rather than an npm registry install.
+Create the machine configuration interactively:
 
-The installer asks for the Discord server/guild ID and Discord application ID, creates `~/.community-agent/config.json` with mode `0600`, generates private operator/internal/proposal secrets, and prints a **Guild Install** bot invitation URL. The current runnable mutation surface is deliberately limited to sending a message; do not grant Administrator permission.
+```bash
+./build/install/community-agent/bin/community-agent install
+```
 
-### Discord setup
+or non-interactively:
 
-1. Open the Discord Developer Portal and create an application.
-2. Add/enable its Bot user.
-3. Enable the **Message Content Intent** in the Discord Developer Portal. Discord Manager does not request the privileged Server Members Intent.
-4. In the Discord desktop/web client, enable **User Settings -> Advanced -> Developer Mode** so guild/channel/user IDs can be copied.
-5. Run the installer and use the generated bot invitation URL to add the bot to the target server.
-6. Put the bot token in the environment. Do not commit it or place it in the config file:
+```bash
+./build/install/community-agent/bin/community-agent install \
+  --guild-id <discord-guild-id> \
+  --application-id <discord-application-id>
+```
+
+The installer creates `~/.community-agent/config.json`, generates private operator/internal/proposal-signing secrets, and prints the Discord bot invitation URL. Existing configuration is not replaced unless `--force` is supplied.
+
+Put the Discord bot token in the environment, never in source control:
 
 ```bash
 export COMMUNITY_AGENT_DISCORD_BOT_TOKEN='...'
 ```
 
-7. Verify the installation before starting the agent runtime:
+Then validate the configured Discord boundary:
 
 ```bash
-community-agent doctor
+./build/install/community-agent/bin/community-agent doctor
 ```
 
-The doctor checks bot-token authentication, application identity, guild access/membership, Message Content intent enablement, the exact install permission set, configured analysis/trusted channel references, effective channel permission overwrites, and role-hierarchy limitations. It returns a non-zero exit code when required setup is missing. Use `community-agent doctor --json` for machine-readable output.
+Machine-readable doctor output is available with `doctor --json`.
 
-8. Start the private control plane:
+## Run
+
+Start the Java MCP/control runtime:
 
 ```bash
-community-agent serve
+./build/install/community-agent/bin/community-agent serve
 ```
 
-The default UI is available at `http://127.0.0.1:3210`.
+The configured Java HTTP runtime binds to the configured host/port, which defaults to loopback. Do not expose the service directly to an untrusted network.
 
-The current release does not start a Discord Gateway listener or expose a Discord slash command. REST observation and the typed message mutation are available once a bot token is configured. Gateway observation, proactive analysis, and the wider capability set remain explicitly unaccepted until a controlled Discord test guild is available.
+A one-shot operator request can be sent through the Java application entrypoint:
 
-### Remote web / ChatGPT Web MCP exposure
-
-The daemon itself remains loopback-bound. Do **not** bind it to `0.0.0.0`. To expose the operator MCP or dashboard remotely, terminate TLS in an authenticated HTTPS reverse proxy/tunnel on the same machine and explicitly configure the public host/origin:
-
-```json
-{
-  "web": {
-    "host": "127.0.0.1",
-    "port": 3210,
-    "allowedHosts": ["discord.example.com"],
-    "allowedOrigins": ["https://discord.example.com"]
-  }
-}
+```bash
+./build/install/community-agent/bin/community-agent "Analyze my Discord server."
 ```
 
-Host checks are exact and remote browser origins must be exact HTTPS origins. Requests without an `Origin` remain valid for authenticated non-browser MCP clients, but every MCP/API route still requires its bearer token.
+That path starts the Java product runtime, asks the standalone Strands MCP service to reason over only the authorized Java capabilities, returns the result, and tears the generation down.
 
-## Control surfaces
+## MCP authority surfaces
 
-When `serve` is running:
+When `serve` is active:
 
-- `POST /mcp/agent` is the private internal Strands tool surface and requires the generated internal bearer token.
-- `POST /mcp/operator` is the private operator MCP surface and requires the generated operator bearer token.
-- Both endpoints negotiate MCP protocol version `2025-11-25`; use an authenticated MCP client rather than treating the HTTP endpoint as anonymous.
-- `/` is the local web control surface.
-- `/api/*` is the local operator HTTP API and requires the generated operator bearer token. `GET /api/doctor` runs the same installation preflight as the CLI.
+- `POST /mcp/agent` requires the generated internal-agent bearer token and publishes only `community_observe` and `community_propose`;
+- `POST /mcp/operator` requires the generated operator bearer token and additionally publishes product invocation, proposal listing, and approval operations.
 
-`/mcp/agent` deliberately has no proposal approval or trusted-controller configuration mutation tool.
+Approval does not enter the model-facing catalog. The separation is enforced by distinct `AIFunctionCatalogView` publication, not only by prompt instructions.
 
-The operator MCP surface can inspect the guild, create a proposal, list proposals, and approve the supported typed message action. The internal surface can inspect and create proposals but cannot approve them. Configuration and trust policy remain machine-owned.
+## Proposal safety
 
-Control surfaces derive their own audit actor identity; callers cannot spoof `requestedBy` or `approvedBy` labels. Configuration updates are fully validated, atomically persisted with private permissions, audited without exposing control secrets, and require a process restart before the new runtime policy/authority is active.
-
-## Discord interaction authority
-
-Default configuration:
-
-```json
-{
-  "trustedDiscordInteraction": {
-    "enabled": false,
-    "userIds": [],
-    "roleIds": [],
-    "channelIds": [],
-    "requireMention": true
-  }
-}
-```
-
-A Discord message becomes a trusted operator request only when all configured boundary checks pass. Discord itself cannot modify this configuration.
-
-Untrusted messages may still cause deterministic analysis to run. The agent receives resulting signals explicitly labeled as untrusted observation data.
-
-## Autonomy
-
-Every managed mutation resolves through one policy:
-
-- `OBSERVE`: no mutation and no proposal.
-- `PROPOSE`: create a signed, expiring proposal; no mutation until an external operator approves it.
-- `OPERATE`: execute immediately.
-
-The current supported action is `send_message`, and it is reached through a signed proposal. The broader sensitive-operation policy in the design document applies when those typed capabilities are implemented and physically accepted.
-
-Proposal tokens are self-contained and HMAC-signed. Approval is claimed durably **before** the effect. Concurrent approval attempts therefore execute at most once, and a failed/crashed approval is intentionally one-shot rather than replayable. A fresh proposal is required after a failed claimed execution.
-
-## Strands architecture
+The current mutation flow is:
 
 ```text
-ChatGPT / Claude / Web / CLI
-            |
-      operator MCP/API
-            |
-      Discord Manager
-            |
-  root Strands coordinator
-     /   /   |   \   \
-community moderation support events content server-ops
-            |
-       internal MCP
-            |
- deterministic handlers/policy
-       /           \
-Discord REST     subscription workers
+observe / reason
+      -> propose
+      -> signed append-only proposal journal
+      -> authenticated operator approval
+      -> claim proposal
+      -> verify signature + expiry
+      -> execute supported deterministic action
+      -> journal COMPLETED or FAILED
 ```
 
-This repository has no direct `@strands-agents/sdk` dependency. Shared Strands runtime/MCP lifecycle behavior comes from `@tjxjnoobie/strands-bridge`.
+Claim occurs before the external effect so concurrent approvals cannot execute the same proposal twice. A claimed failed proposal is not replayed automatically; create a fresh proposal instead.
 
-## Subscription workers
+## Discord setup
 
-Machine configuration includes disabled-by-policy worker definitions for `codex` and `claude`. They are subprocess boundaries, not Discord commands.
+1. Create a Discord application and Bot user in the Discord Developer Portal.
+2. Enable Message Content Intent when the configured observation behavior requires it.
+3. Enable Discord client Developer Mode to copy guild/channel/user IDs.
+4. Run `community-agent install` and use the generated guild-install invitation URL.
+5. Set `COMMUNITY_AGENT_DISCORD_BOT_TOKEN` in the process environment.
+6. Run `community-agent doctor`.
+7. Start `community-agent serve` only after the diagnostic boundary is acceptable.
 
-Worker execution:
-- uses `shell: false`;
-- passes prompts on stdin;
-- canonicalizes working directories with `realpath` so symlinks cannot escape machine-configured allowlists;
-- passes only a small environment allowlist;
-- caps combined stdout/stderr;
-- escalates timeouts/output overflow from `SIGTERM` to `SIGKILL`;
-- reports typed termination reason (`COMPLETED`, `TIMED_OUT`, or `OUTPUT_LIMIT`);
-- is `PROPOSE` by default.
+Do not grant Administrator permission merely to make setup easier. The supported capability set should drive Discord permissions.
 
-Adjust executable arguments in machine/operator configuration for the installed CLI version. Discord users cannot change worker commands or trusted execution scope.
+## Validation evidence
 
-## Development
+The Java migration is intentionally gated by real boundaries rather than type shims.
 
-```bash
-npm install
-npm run check
-npm pack --dry-run
-```
+Community CI validates:
 
-Architecture checks enforce the core invariants:
-- no direct Strands SDK dependency;
-- agent reasoning does not import `discord.js`;
-- internal agent MCP cannot approve proposals;
-- Discord ingress cannot mutate trusted-controller config;
-- control surfaces derive audit actors rather than accepting caller-supplied labels;
-- production consumers do not own mutable `Map`/`Set` fields.
+1. the exact Function Catalog migration checkout with `clean check publishToMavenLocal stageRuntime`;
+2. the exact standalone Strands bridge checkout and committed npm lock;
+3. the Java Community build/test suite;
+4. a required process-level integration where Java launches the bridge over stdio MCP, the bridge initializes the real Strands SDK, Strands connects back over Streamable HTTP MCP to an ephemeral authorized Java Function Catalog view, and the session closes cleanly.
 
-See [`docs/community-agent/COMMUNITY_AGENT_FINAL_DRAFT.md`](docs/community-agent/COMMUNITY_AGENT_FINAL_DRAFT.md) and [`docs/community-agent/COMMUNITY_AGENT_PROGRESSION.md`](docs/community-agent/COMMUNITY_AGENT_PROGRESSION.md).
+The standalone bridge also independently runs `npm run check:real`, which exercises the real Strands SDK MCP client against a disposable MCP server.
 
-## Validation boundary
+Model-backed reasoning, real Discord mutation, and development-guild acceptance still require their respective credentials/external systems and are not claimed merely because deterministic CI is green.
 
-The checked-in deterministic suite, packed consumer install, HTTP MCP initialize/discovery, proposal lifecycle, and no-token health path are runnable. Physical Discord mutation and model-backed Strands invocation require the operator to provide a real bot token, development guild, and a locally installed subscription CLI or other authorized model surface; those are not claimed as passed by this repository without that evidence.
+## Legacy TypeScript migration evidence
 
-See [`DEMO_RUNBOOK.md`](DEMO_RUNBOOK.md) for the exact local acceptance path and its honest credential boundary. See [`HACKATHON_SUBMISSION.md`](HACKATHON_SUBMISSION.md) for the hackathon description and pre-existing-component disclosure.
+`legacy/typescript/` contains the superseded Node/TypeScript product implementation and tests. It exists only to preserve already-designed behavior while the remaining capabilities are ported.
+
+Do not:
+
+- restore its `package.json` as the root product build;
+- embed `strands-bridge` as a product npm dependency again;
+- move policy, persistence, approvals, Discord authority, or product MCP ownership back into TypeScript;
+- treat a legacy TS test as evidence that the Java product implements that behavior.
+
+Port useful behavior to Java, add production-equivalent Java tests, validate it, then shrink the legacy tree.
+
+## Documentation
+
+The current product design lives under `docs/community-agent/`. Progression/status documentation must distinguish accepted design from physically validated implementation.
+
+Shared engineering policy comes from current `TavallStudios/tavall-docs`, repository `AGENTS.md`, and canonical Tavall architecture tests. Current checked-in APIs win over remembered architecture shapes.
