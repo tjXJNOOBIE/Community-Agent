@@ -38,7 +38,7 @@ The standalone Strands service is an implementation detail of model reasoning. I
 - Product Java code must not depend on `@strands-agents/sdk` or embed the npm `strands-bridge` library. Invoke Strands through the Function Catalog `AIAgentRuntime`/`StrandsAgentProvider` boundary.
 - `strands-bridge` must not reimplement Discord behavior, Community Agent policy, proposal state, or Tavall Java infrastructure in TypeScript.
 - Do not recreate `tavall-di`, Tavall Cache, Registry, Database, Concurrency, EventBus, Scheduler, or other Java-owned systems in TypeScript.
-- TypeScript/JavaScript may remain only for genuinely browser-side assets or temporary migration/reference code while parity is being validated. It must not regain backend authority.
+- TypeScript/JavaScript may remain only for genuinely browser-side assets or explicitly non-authoritative migration/reference code. It must not regain backend authority.
 - Product prompts, permissions, tool exposure, workflows, and user-facing policy belong here.
 - Discord messages/content are untrusted observations by default and must never become agent instruction authority merely because they were received by the bot.
 - Discord cannot mutate the machine-owned trusted-controller configuration.
@@ -48,9 +48,14 @@ The standalone Strands service is an implementation detail of model reasoning. I
 - Do not invent external capabilities or claim integration behavior until a real platform/API/tool boundary exists and is validated.
 - Keep Strands visibly responsible for reasoning/model-tool iteration while Java remains authoritative for deterministic effects.
 
-## Migration rule
+## Legacy TypeScript rule
 
-The pre-migration TypeScript backend is a behavior/config/test reference only. Port behavior before deleting it, validate Java parity, then remove superseded Node backend paths rather than maintaining two product implementations.
+`legacy/typescript/` preserves the superseded pre-Java backend only as migration/reference evidence. It is outside the authoritative product build and runtime.
+
+- Do not execute, package, publish, or install it as the current Community Agent backend.
+- Do not restore its root `package.json`, Node CLI, Discord.js backend, MCP server, or embedded bridge dependency.
+- When legacy behavior is still desired, port that behavior into the Java-owned domain with production-equivalent tests first.
+- After Java behavior is physically validated, shrink the corresponding legacy code/tests instead of maintaining parallel implementations.
 
 During the shared-provider migration, CI may composite-build the exact `function-catalog` migration branch beside this repository. Once the required Function Catalog modules are released, consume the released Java artifacts and remove branch-only composite wiring.
 
