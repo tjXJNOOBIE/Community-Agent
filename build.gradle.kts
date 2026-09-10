@@ -42,6 +42,7 @@ dependencies {
     implementation("org.tavall:strands-agent-provider:${functionCatalogVersion.get()}")
     implementation("org.tavall:mcp-server:${functionCatalogVersion.get()}")
     implementation("org.tavall:tavall-di:${tavallDiVersion.get()}")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.20.1")
     implementation("org.apache.tomcat.embed:tomcat-embed-core:11.0.20")
 
     testImplementation(platform("org.junit:junit-bom:5.11.4"))
