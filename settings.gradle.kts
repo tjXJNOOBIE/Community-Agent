@@ -9,3 +9,8 @@ val tavallDiCheckout = file("../tavall-di")
 if (tavallDiCheckout.resolve("settings.gradle.kts").isFile) {
     includeBuild(tavallDiCheckout)
 }
+
+val tavallLoggingCheckout = file("../tavall-logging")
+if (tavallLoggingCheckout.resolve("settings.gradle.kts").isFile) {
+    includeBuild(tavallLoggingCheckout)
+}
