@@ -1,6 +1,5 @@
 package org.tavall.community;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.tavall.ai.agent.AIAgentExecutionResult;
 import org.tavall.ai.agent.AIAgentExecutionStatus;
 import org.tavall.community.config.CommunityAgentPathResolver;
@@ -24,13 +23,13 @@ public final class CommunityAgentApplication {
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             System.err.println("Discord Manager was interrupted.");
-            System.exitCode = 130;
+            System.exit(130);
         } catch (RuntimeException exception) {
             String message = exception.getMessage();
             System.err.println(message == null || message.isBlank()
                     ? exception.getClass().getSimpleName()
                     : message);
-            System.exitCode = 1;
+            System.exit(1);
         }
     }
 
@@ -50,10 +49,7 @@ public final class CommunityAgentApplication {
             );
         }
 
-        List<String> requestArguments = commandArguments.isEmpty()
-                ? List.of()
-                : commandArguments;
-        String request = String.join(" ", requestArguments).trim();
+        String request = String.join(" ", commandArguments).trim();
         if (request.isEmpty()) {
             throw new IllegalArgumentException("Provide a Discord Manager request or use the serve command.");
         }
@@ -77,7 +73,6 @@ public final class CommunityAgentApplication {
             Map<String, String> environment,
             String request
     ) {
-        ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
         try (CommunityApplicationRuntime runtime = CommunityApplicationBootstrap.start(configurationPath, environment)) {
             AIAgentExecutionResult result = runtime.invoke(request);
             if (result.status() != AIAgentExecutionStatus.COMPLETED) {
