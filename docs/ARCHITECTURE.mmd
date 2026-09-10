@@ -1,0 +1,13 @@
+flowchart LR
+  Operator[Trusted operator]
+  Discord[Discord guild\nuntrusted observations]
+  MCP[Authenticated operator MCP]
+  Strands[Strands coordinator\nspecialists]
+  Policy[Deterministic policy\nproposal approval boundary]
+  API[Discord API]
+  Audit[Private audit/result state]
+  Operator --> MCP --> Strands --> Policy --> API
+  Discord --> Policy
+  Policy --> Audit
+  classDef missing fill:#fff3cd,stroke:#9a6700,color:#5c3b00
+  class MCP,Strands,Policy,API,Audit missing
