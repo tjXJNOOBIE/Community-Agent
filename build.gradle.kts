@@ -1,6 +1,7 @@
 plugins {
     application
     java
+    id("org.tavall.architecture-tests") version "0.1.0-SNAPSHOT"
 }
 
 group = "org.tavall.community"
@@ -11,6 +12,7 @@ java {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
     val githubToken = providers.environmentVariable("GITHUB_TOKEN").orNull
     if (!githubToken.isNullOrBlank()) {
@@ -49,6 +51,10 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.assertj:assertj-core:3.27.7")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+architectureTests {
+    modules.set(listOf("core", "patterns", "di", "runtime"))
 }
 
 application {
