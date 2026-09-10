@@ -1,4 +1,4 @@
-import type { StrandsAgentRuntimeConfig } from '@tjxjnoobie/custom-strands-bridge'
+import type { StrandsAgentRuntimeConfig } from '@tjxjnoobie/strands-bridge'
 
 import type { CommunityAgentConfig } from '../../config/data/CommunityAgentConfig.js'
 import { COMMUNITY_AGENT_SYSTEM_PROMPT } from '../prompt/CommunityAgentSystemPrompt.js'
@@ -61,7 +61,9 @@ export class CommunityAgentRuntimeConfigBuilder {
                   ? {}
                   : {
                       headers: {
-                        Authorization: `Bearer ${internalAuthorization}`,
+                        Authorization: internalAuthorization.startsWith('Bearer ')
+                          ? internalAuthorization
+                          : `Bearer ${internalAuthorization}`,
                       },
                     }),
               },

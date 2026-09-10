@@ -2,7 +2,7 @@
 
 > **Status:** Working product design and implementation contract  
 > **Product surface:** Discord only  
-> **Shared agent runtime:** `@tjxjnoobie/custom-strands-bridge`  
+> **Shared agent runtime:** `@tjxjnoobie/strands-bridge`  
 > **Owns:** Discord operation policy, proposals, proactive analysis, event workflows, MCP/web/CLI control, Discord ingress authority, product agent composition  
 > **Must not define:** a second Strands runtime, Tavall Java infrastructure, or Discord-as-authority shortcuts
 
@@ -30,7 +30,7 @@ Discord Manager owns:
 - optional machine-configured subscription worker invocation;
 - product audit evidence.
 
-`custom-strands-bridge` owns:
+`strands-bridge` owns:
 
 - Strands runtime creation;
 - native model/tool loop;
@@ -310,7 +310,7 @@ After the bot token is configured, `community-agent doctor` performs a determini
 
 ### Strands
 
-The package consumes Strands only through `@tjxjnoobie/custom-strands-bridge`.
+The package consumes Strands only through `@tjxjnoobie/strands-bridge`.
 
 ### MCP
 

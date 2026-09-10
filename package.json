@@ -37,7 +37,7 @@
   "dependencies": {
     "@modelcontextprotocol/node": "2.0.0",
     "@modelcontextprotocol/server": "2.0.0",
-    "@tjxjnoobie/custom-strands-bridge": "github:tjXJNOOBIE/custom-strands-bridge#677f141a73fcc1bed23edf02c8fdfbd116fd034d",
+    "@tjxjnoobie/strands-bridge": "github:tjXJNOOBIE/strands-bridge#5962a227c6d578b38a9a021fd53e5b4247c47a3e",
     "discord.js": "14.27.0",
     "zod": "4.5.4"
   },

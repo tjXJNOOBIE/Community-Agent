@@ -7,8 +7,8 @@ import { COMMUNITY_AGENT_SYSTEM_PROMPT } from '../../../src/agent/prompt/Communi
 test('buildsStableProductIdentityAndPrompt', () => {
   const runtimeConfig = new CommunityAgentRuntimeConfigBuilder({}).build()
 
-  assert.equal(runtimeConfig.agent.id, 'community-agent')
-  assert.equal(runtimeConfig.agent.name, 'Community Agent')
+  assert.equal(runtimeConfig.agent.id, 'discord-manager')
+  assert.equal(runtimeConfig.agent.name, 'Discord Manager')
   assert.equal(runtimeConfig.agent.systemPrompt, COMMUNITY_AGENT_SYSTEM_PROMPT)
   assert.equal(runtimeConfig.agent.printer, false)
   assert.equal(runtimeConfig.agent.model, undefined)
