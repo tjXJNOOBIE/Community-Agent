@@ -76,7 +76,7 @@ jobs:
       - name: Validate and publish selected canonical architecture-test modules locally
         working-directory: Tavall-Architecture-Tests
         run: |
-          ./gradlew --no-daemon \
+          gradle --no-daemon \
             :modules:core:check :modules:core:publishToMavenLocal \
             :modules:patterns:check :modules:patterns:publishToMavenLocal \
             :modules:di:check :modules:di:publishToMavenLocal \
