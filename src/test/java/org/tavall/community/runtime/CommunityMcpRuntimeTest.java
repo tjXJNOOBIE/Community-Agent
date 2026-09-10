@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTransport;
-import io.modelcontextprotocol.client.transport.McpHttpClientTransportAuthorizationException;
 import io.modelcontextprotocol.json.McpJsonMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -84,11 +83,7 @@ class CommunityMcpRuntimeTest {
                 "wrong-token",
                 objectMapper
         )) {
-            assertThatThrownBy(client::initialize)
-                    .isInstanceOfAny(
-                            McpHttpClientTransportAuthorizationException.class,
-                            RuntimeException.class
-                    );
+            assertThatThrownBy(client::initialize).isInstanceOf(RuntimeException.class);
         }
     }
 
