@@ -40,10 +40,23 @@ jobs:
           ref: main
           path: tavall-logging
 
+      - name: Checkout standalone Strands bridge
+        uses: actions/checkout@v4
+        with:
+          repository: tjXJNOOBIE/strands-bridge
+          ref: working/java-first-strands-mcp
+          path: strands-bridge
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "25"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: strands-bridge/package-lock.json
 
       - uses: gradle/actions/setup-gradle@v4
         with:
@@ -53,6 +66,18 @@ jobs:
         working-directory: function-catalog
         run: ./gradlew --no-daemon clean check publishToMavenLocal stageRuntime
 
-      - name: Validate Java backend
+      - name: Build standalone Strands bridge
+        working-directory: strands-bridge
+        run: |
+          npm ci --ignore-scripts
+          npm run build
+
+      - name: Configure physical bridge integration
+        shell: bash
+        run: |
+          echo "STRANDS_BRIDGE_INTEGRATION_NODE=$(command -v node)" >> "$GITHUB_ENV"
+          echo "STRANDS_BRIDGE_INTEGRATION_ENTRYPOINT=${GITHUB_WORKSPACE}/strands-bridge/dist/mcp/main.js" >> "$GITHUB_ENV"
+
+      - name: Validate Java backend and physical Strands round trip
         working-directory: Community-Agent
-        run: gradle --no-daemon clean test build
+        run: gradle --no-daemon -Dstrands.bridge.integration.required=true clean test build
