@@ -33,6 +33,13 @@ jobs:
           ref: main
           path: tavall-di
 
+      - name: Checkout Tavall Logging
+        uses: actions/checkout@v4
+        with:
+          repository: TavallStudios/tavall-logging
+          ref: main
+          path: tavall-logging
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
