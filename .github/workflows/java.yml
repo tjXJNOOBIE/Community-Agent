@@ -1,0 +1,46 @@
+name: Java backend
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Community Agent
+        uses: actions/checkout@v4
+        with:
+          path: Community-Agent
+
+      - name: Checkout Function Catalog migration dependency
+        uses: actions/checkout@v4
+        with:
+          repository: TavallStudios/function-catalog
+          ref: working/strands-mcp-agent-provider
+          path: function-catalog
+
+      - name: Checkout Tavall DI
+        uses: actions/checkout@v4
+        with:
+          repository: TavallStudios/tavall-di
+          ref: main
+          path: tavall-di
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.1.0"
+
+      - name: Validate Java backend
+        working-directory: Community-Agent
+        run: gradle --no-daemon clean test build
