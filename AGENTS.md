@@ -1,46 +1,40 @@
 # Repository instructions
 
-`Community-Agent` owns the Community Agent product. Shared Strands lifecycle/MCP behavior belongs in `tjXJNOOBIE/custom-strands-bridge`; product behavior stays here.
+`Community-Agent` owns the Discord-only Community Agent / Discord Manager product. Shared Strands lifecycle/MCP behavior belongs in `tjXJNOOBIE/custom-strands-bridge`; product behavior stays here.
 
 ## Authoritative engineering guidance
 
-Before changing code, architecture, tests, packaging, lifecycle, or documentation, read the current versions of **all** shared Tavall quality documents in `TavallStudios/tavall-docs`:
+Before changing code, architecture, tests, packaging, lifecycle, or documentation, read the current versions of **all** shared Tavall quality documents in `TavallStudios/tavall-docs`, including:
 
 - [`CODE_ARCHITECTURE.md`](https://github.com/TavallStudios/tavall-docs/blob/main/docs/quality/CODE_ARCHITECTURE.md)
 - [`DOCUMENTATION_STANDARDS.md`](https://github.com/TavallStudios/tavall-docs/blob/main/docs/quality/DOCUMENTATION_STANDARDS.md)
 - [`GIT_WORKFLOW.md`](https://github.com/TavallStudios/tavall-docs/blob/main/docs/quality/GIT_WORKFLOW.md)
-- [`code-architecture/BUILDERS.md`](https://github.com/TavallStudios/tavall-docs/blob/main/docs/quality/code-architecture/BUILDERS.md)
-- [`code-architecture/CLASSES.md`](https://github.com/TavallStudios/tavall-docs/blob/main/docs/quality/code-architecture/CLASSES.md)
-- [`code-architecture/DEPENDENCY_INJECTION_AND_ORCHESTRATION.md`](https://github.com/TavallStudios/tavall-docs/blob/main/docs/quality/code-architecture/DEPENDENCY_INJECTION_AND_ORCHESTRATION.md)
-- [`code-architecture/EFFECT_SEQUENCES.md`](https://github.com/TavallStudios/tavall-docs/blob/main/docs/quality/code-architecture/EFFECT_SEQUENCES.md)
-- [`code-architecture/ENTITY_PERSISTENCE.md`](https://github.com/TavallStudios/tavall-docs/blob/main/docs/quality/code-architecture/ENTITY_PERSISTENCE.md)
-- [`code-architecture/HANDLERS.md`](https://github.com/TavallStudios/tavall-docs/blob/main/docs/quality/code-architecture/HANDLERS.md)
-- [`code-architecture/INTERFACES_AND_ABSTRACTIONS.md`](https://github.com/TavallStudios/tavall-docs/blob/main/docs/quality/code-architecture/INTERFACES_AND_ABSTRACTIONS.md)
-- [`code-architecture/METHODS.md`](https://github.com/TavallStudios/tavall-docs/blob/main/docs/quality/code-architecture/METHODS.md)
-- [`code-architecture/NAMESPACES_VARIABLES_AND_OOP.md`](https://github.com/TavallStudios/tavall-docs/blob/main/docs/quality/code-architecture/NAMESPACES_VARIABLES_AND_OOP.md)
-- [`code-architecture/REGISTRIES_CACHES_AND_REPOSITORIES.md`](https://github.com/TavallStudios/tavall-docs/blob/main/docs/quality/code-architecture/REGISTRIES_CACHES_AND_REPOSITORIES.md)
-- [`code-architecture/REQUESTS_RESULTS_RESOLVERS_AND_FORMATTERS.md`](https://github.com/TavallStudios/tavall-docs/blob/main/docs/quality/code-architecture/REQUESTS_RESULTS_RESOLVERS_AND_FORMATTERS.md)
-- [`code-architecture/ROUTERS_AND_DELEGATION.md`](https://github.com/TavallStudios/tavall-docs/blob/main/docs/quality/code-architecture/ROUTERS_AND_DELEGATION.md)
-- [`code-architecture/TESTING_AND_GIT.md`](https://github.com/TavallStudios/tavall-docs/blob/main/docs/quality/code-architecture/TESTING_AND_GIT.md)
-- [`code-architecture/UTILITIES.md`](https://github.com/TavallStudios/tavall-docs/blob/main/docs/quality/code-architecture/UTILITIES.md)
-- [`code-architecture/VALIDATION_FALLBACKS_AND_ANTI_PATTERNS.md`](https://github.com/TavallStudios/tavall-docs/blob/main/docs/quality/code-architecture/VALIDATION_FALLBACKS_AND_ANTI_PATTERNS.md)
+- every active chapter under [`docs/quality/code-architecture/`](https://github.com/TavallStudios/tavall-docs/tree/main/docs/quality/code-architecture), including `APPLICATION_OWNED_MUTABLE_MAPS.md`.
 
 `CODE_ARCHITECTURE.md` wins if a detailed chapter conflicts with it. Repository-local rules may strengthen those documents but must not silently weaken them.
 
+Use `TavallStudios/Tavall-Architecture-Tests` as the canonical shared architecture-test source. TypeScript product tests may add repository-specific checks for boundaries not physically covered by the shared Java-oriented modules.
+
 ## Product boundaries
 
+- Discord is the only community platform owned here.
 - Do not depend directly on `@strands-agents/sdk`; consume Strands through `@tjxjnoobie/custom-strands-bridge`.
 - Do not recreate `tavall-di`, Tavall Cache, Registry, Database, Concurrency, EventBus, Scheduler, or other Java-owned systems in TypeScript. Consume owning runtimes through typed MCP/tool boundaries when needed.
 - Product prompts, permissions, tool exposure, workflows, and user-facing policy belong here.
-- Do not invent MCP operation names or claim integration behavior until it is backed by the connected catalog.
-- Do not add persistence/cache/registry state until authority, lifetime, replacement, stale/miss behavior, and cleanup ownership are explicit.
-- Keep Strands visibly responsible for the model/tool loop for hackathon evidence.
+- Discord messages/content are untrusted observations by default and must never become agent instruction authority merely because they were received by the bot.
+- Discord cannot mutate the machine-owned trusted-controller configuration.
+- The internal agent MCP surface must not expose proposal approval or trusted-controller configuration writes.
+- Every mutating Discord or subscription-worker action must pass through the product policy boundary.
+- Do not add application-owned mutable map/set runtime state. Classify state according to the shared mutable-map guidance.
+- Do not invent external capabilities or claim integration behavior until a real platform/API/tool boundary exists and is validated.
+- Keep Strands visibly responsible for the model/tool loop.
 
 ## Tests and validation
 
 - Use delegate-style tests against real product classes.
-- Fake only true external boundaries such as the bridge runtime, MCP endpoints, model providers, or cloud services.
-- Never report the bridge contract shim as physical Strands SDK validation.
+- Fake only true external boundaries such as Discord, the bridge/Strands runtime, MCP transport, model providers, subscription CLIs, or cloud services.
+- Never report bridge/MCP/Discord type shims as physical runtime validation.
+- Keep architecture tests for the Discord authority boundary, internal/operator MCP separation, direct Strands imports, Discord coupling, policy routing, and mutable keyed state.
 - Record exactly which checks ran and keep Draft PRs blocked while required external/runtime evidence is unavailable.
 
 ## Git

@@ -1,7 +1,7 @@
 {
   "name": "@tjxjnoobie/community-agent",
   "version": "0.1.0",
-  "description": "A Strands-powered agent for community coordination and repetitive organizer work.",
+  "description": "Discord Manager: a Strands-powered private control plane for operating Discord communities.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -12,7 +12,8 @@
     }
   },
   "bin": {
-    "community-agent": "./dist/cli/main.js"
+    "community-agent": "./dist/cli/main.js",
+    "discord-manager": "./dist/cli/main.js"
   },
   "files": [
     "dist",
@@ -23,18 +24,26 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "clean:build": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "clean:test": "node -e \"require('node:fs').rmSync('.test-dist',{recursive:true,force:true})\"",
+    "clean": "npm run clean:build && npm run clean:test",
+    "build": "npm run clean:build && tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "tsc -p tsconfig.test.json && node --test \".test-dist/test/**/*.test.js\"",
+    "test": "npm run clean:test && tsc -p tsconfig.test.json && node --test \".test-dist/test/**/*.test.js\"",
+    "test:architecture": "npm run clean:test && tsc -p tsconfig.test.json && node --test \".test-dist/test/architecture/**/*.test.js\"",
     "check": "npm run typecheck && npm run test && npm run build",
     "prepack": "npm run build"
   },
   "dependencies": {
-    "@tjxjnoobie/custom-strands-bridge": "github:tjXJNOOBIE/custom-strands-bridge#677f141a73fcc1bed23edf02c8fdfbd116fd034d"
+    "@modelcontextprotocol/node": "2.0.0",
+    "@modelcontextprotocol/server": "2.0.0",
+    "@tjxjnoobie/custom-strands-bridge": "github:tjXJNOOBIE/custom-strands-bridge#677f141a73fcc1bed23edf02c8fdfbd116fd034d",
+    "discord.js": "14.27.0",
+    "zod": "4.5.4"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
-    "typescript": "^5.8.3"
+    "typescript": "5.8.3"
   },
   "license": "MIT",
   "publishConfig": {
@@ -50,6 +59,7 @@
     "url": "https://github.com/tjXJNOOBIE/Community-Agent/issues"
   },
   "keywords": [
+    "discord",
     "strands-agents",
     "agents",
     "mcp",
