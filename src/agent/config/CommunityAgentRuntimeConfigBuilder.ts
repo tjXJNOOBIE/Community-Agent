@@ -1,45 +1,69 @@
 import type { StrandsAgentRuntimeConfig } from '@tjxjnoobie/custom-strands-bridge'
 
+import type { CommunityAgentConfig } from '../../config/data/CommunityAgentConfig.js'
 import { COMMUNITY_AGENT_SYSTEM_PROMPT } from '../prompt/CommunityAgentSystemPrompt.js'
+import type { CommunitySpecialistDefinition } from '../prompt/CommunitySpecialistPrompts.js'
 
 export type CommunityAgentEnvironment = Readonly<Record<string, string | undefined>>
+type AgentTools = StrandsAgentRuntimeConfig['agent']['tools']
+
+export interface CommunityAgentRuntimeBuildRequest {
+  config?: CommunityAgentConfig
+  tools?: AgentTools
+  specialist?: CommunitySpecialistDefinition
+}
 
 export class CommunityAgentRuntimeConfigBuilder {
-  private readonly environment: CommunityAgentEnvironment
+  public constructor(
+    private readonly environment: CommunityAgentEnvironment = process.env,
+  ) {}
 
-  public constructor(environment: CommunityAgentEnvironment = process.env) {
-    this.environment = environment
-  }
+  public build(request: CommunityAgentRuntimeBuildRequest = {}): StrandsAgentRuntimeConfig {
+    const modelId =
+      request.config?.modelId ??
+      this.optionalString(this.environment['COMMUNITY_AGENT_MODEL_ID'])
 
-  public build(): StrandsAgentRuntimeConfig {
-    const modelId = this.optionalString(this.environment['COMMUNITY_AGENT_MODEL_ID'])
-    const mcpUrl = this.optionalString(this.environment['COMMUNITY_AGENT_MCP_URL'])
+    const internalMcpUrl =
+      request.config === undefined
+        ? this.optionalString(this.environment['COMMUNITY_AGENT_MCP_URL'])
+        : `http://${request.config.web.host}:${request.config.web.port}/mcp/agent`
 
-    const authorization = this.optionalString(
-      this.environment['COMMUNITY_AGENT_MCP_AUTHORIZATION'],
-    )
+    const internalAuthorization =
+      request.config?.control.internalAgentToken ??
+      this.optionalString(this.environment['COMMUNITY_AGENT_MCP_AUTHORIZATION'])
 
-    const runtimeConfig: StrandsAgentRuntimeConfig = {
+    const specialist = request.specialist
+    const agentId = specialist?.id ?? 'discord-manager'
+    const agentName = specialist?.name ?? 'Discord Manager'
+    const systemPrompt = specialist?.systemPrompt ?? COMMUNITY_AGENT_SYSTEM_PROMPT
+
+    return {
       agent: {
-        id: 'community-agent',
-        name: 'Community Agent',
-        systemPrompt: COMMUNITY_AGENT_SYSTEM_PROMPT,
+        id: agentId,
+        name: agentName,
+        systemPrompt,
         printer: false,
         traceAttributes: {
           product: 'community-agent',
-          hackathonTrack: 'Good Neighbor',
+          surface: 'discord-manager',
+          role: specialist === undefined ? 'coordinator' : specialist.id,
         },
         ...(modelId === undefined ? {} : { model: modelId }),
+        ...(request.tools === undefined ? {} : { tools: request.tools }),
       },
-      ...(mcpUrl === undefined
+      ...(internalMcpUrl === undefined
         ? {}
         : {
             mcpServers: {
               product: {
-                url: mcpUrl,
-                ...(authorization === undefined
+                url: internalMcpUrl,
+                ...(internalAuthorization === undefined
                   ? {}
-                  : { headers: { Authorization: authorization } }),
+                  : {
+                      headers: {
+                        Authorization: `Bearer ${internalAuthorization}`,
+                      },
+                    }),
               },
             },
             mcpDefaults: {
@@ -48,17 +72,13 @@ export class CommunityAgentRuntimeConfigBuilder {
             },
           }),
     }
-
-    return runtimeConfig
   }
 
   private optionalString(value: string | undefined): string | undefined {
     if (value === undefined) {
       return undefined
     }
-
-    const normalizedValue = value.trim()
-
-    return normalizedValue.length === 0 ? undefined : normalizedValue
+    const normalized = value.trim()
+    return normalized.length === 0 ? undefined : normalized
   }
 }
