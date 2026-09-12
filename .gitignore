@@ -3,7 +3,7 @@ dist/
 .test-dist/
 build/
 .gradle/
-runtime/
+/runtime/
 runtime-manifest.json
 .env
 .env.*
