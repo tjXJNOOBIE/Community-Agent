@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "agent": "Community / Discord Manager Agent",
+  "generatedAt": "2026-09-12T18:22:00Z",
+  "entries": [
+    {
+      "scenario": "Real Discord development-guild mutation workflow",
+      "date": "2026-09-12",
+      "environment": "Tavall Cloud DEVELOPMENT; no authorized Discord development guild and bot credentials available in this acceptance session",
+      "serviceProvider": "Discord API / development guild",
+      "sourceCommit": "a3c4fff42080de138cf0a755b45634955ac17921",
+      "artifactFilename": null,
+      "artifactLocation": null,
+      "artifactSha256": null,
+      "action": null,
+      "authoritativeVerification": null,
+      "classification": "UNEXECUTED",
+      "status": "BLOCKED",
+      "blockingReason": "A real Discord bot token, application, development guild, and dedicated test channel/users were not available. No mock or simulated footage is being claimed."
+    }
+  ]
+}

@@ -8,15 +8,16 @@ Prerequisites: Node.js 22+, a clean checkout, and no committed secrets.
 
 ```bash
 npm install
-npm run check
-npm run build
+gradle --no-daemon clean check installDist
+npm run package:runtime
 npm pack
 tmp="$(mktemp -d)"
 consumer="$tmp/consumer"
 mkdir -p "$consumer"
-(cd "$consumer" && npm init -y && npm install /path/to/tjxjnoobie-community-agent-0.1.0.tgz)
+(cd "$consumer" && npm init -y && npm install /path/to/tjxjnoobie-community-agent-0.2.0.tgz)
+(cd "$consumer" && HOME="$tmp" npx --no-install community-agent doctor)
 (cd "$consumer" && HOME="$tmp" npx --no-install community-agent install --guild-id 123456789012345678 --application-id 123456789012345678)
-COMMUNITY_AGENT_DISCORD_BOT_TOKEN='' HOME="$tmp" node dist/cli/main.js serve
+(cd "$consumer" && HOME="$tmp" npx --no-install community-agent serve)
 ```
 
 The last command is intentionally started in a separate terminal. Verify:
@@ -37,10 +38,10 @@ Requires a disposable development guild, a bot token supplied only through `COMM
 2. Add the bot using the printed invite URL.
 3. Run `community-agent doctor` and preserve its JSON output privately.
 4. Start `community-agent serve`.
-5. Create a proposal for `send_message` with a test channel ID and harmless test text.
+5. Create proposals for `send_message`, bot-authored `edit_message`, and `create_thread`/`add_reaction` with a test channel/message and harmless test data. A dedicated test-user `timeout_member` followed by `clear_timeout` is the reversible moderation path.
 6. Approve it through the authenticated operator MCP surface.
 7. Refresh the channel in Discord and independently verify the message ID/content.
-8. List proposals and retain the completed audit/proposal record.
+8. List proposals and retain the completed audit/proposal record for each action family.
 9. Repeat the approval request with the same proposal ID; it must be rejected as already claimed.
 10. Stop and restart the service, then repeat MCP initialize/discovery.
 
@@ -49,3 +50,7 @@ No Discord token, model credential, browser session, or operator bearer token be
 ## Cleanup
 
 Stop the server, remove the temporary `HOME`/data directory, and delete any test message from the disposable guild through the normal Discord UI or an explicitly approved operator action.
+The development-guild mutation/video gate remains blocked until the real bot,
+guild, channel, and dedicated test identities are supplied. The manifest
+records this as unexecuted; local Java tests and MCP discovery are not a
+substitute for Discord footage.
