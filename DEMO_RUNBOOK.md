@@ -50,3 +50,7 @@ No Discord token, model credential, browser session, or operator bearer token be
 ## Cleanup
 
 Stop the server, remove the temporary `HOME`/data directory, and delete any test message from the disposable guild through the normal Discord UI or an explicitly approved operator action.
+The development-guild mutation/video gate remains blocked until the real bot,
+guild, channel, and dedicated test identities are supplied. The manifest
+records this as unexecuted; local Java tests and MCP discovery are not a
+substitute for Discord footage.

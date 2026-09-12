@@ -245,3 +245,6 @@ Port useful behavior to Java, add production-equivalent Java tests, validate it,
 The current product design lives under `docs/community-agent/`. Progression/status documentation must distinguish accepted design from physically validated implementation.
 
 Shared engineering policy comes from current `TavallStudios/tavall-docs`, repository `AGENTS.md`, and canonical Tavall architecture tests. Current checked-in APIs win over remembered architecture shapes.
+- The required real Discord video is not claimed yet. The exact blocker and empty
+  artifact fields are recorded in docs/evidence/VIDEO_EVIDENCE_MANIFEST.json; no
+  simulated Discord footage is substituted.
