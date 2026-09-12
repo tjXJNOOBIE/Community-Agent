@@ -1,6 +1,10 @@
 node_modules/
 dist/
 .test-dist/
+build/
+.gradle/
+runtime/
+runtime-manifest.json
 .env
 .env.*
 !.env.example

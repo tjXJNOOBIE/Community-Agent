@@ -12,6 +12,7 @@ import org.tavall.dependency.DependencyAccess;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.Instant;
 
 /** Operator-only proposal inspection and approval/execution capabilities. */
 public final class CommunityOperatorHandler implements DependencyAccess<CommunityDependencies> {
@@ -58,19 +59,54 @@ public final class CommunityOperatorHandler implements DependencyAccess<Communit
             CommunityDependencies dependencies,
             CommunityProposal claimed
     ) {
-        if (!"send_message".equals(claimed.action())) {
-            throw new IllegalArgumentException("unsupported Discord action " + claimed.action());
-        }
-
         Optional<DiscordGateway> gateway = dependencies.discordGateway();
         if (gateway.isEmpty()) {
             throw new IllegalStateException("Discord bot token is not configured");
         }
 
         JsonNode input = claimed.input();
-        String channelId = requiredText(input, "channelId");
-        String content = requiredText(input, "content");
-        return gateway.get().sendMessage(channelId, content);
+        return switch (claimed.action()) {
+            case "send_message" -> gateway.get().sendMessage(
+                    requiredText(input, "channelId"),
+                    requiredText(input, "content")
+            );
+            case "edit_message" -> gateway.get().editMessage(
+                    requiredText(input, "channelId"),
+                    requiredText(input, "messageId"),
+                    requiredText(input, "content")
+            );
+            case "add_reaction" -> gateway.get().addReaction(
+                    requiredText(input, "channelId"),
+                    requiredText(input, "messageId"),
+                    requiredText(input, "emoji")
+            );
+            case "create_thread" -> gateway.get().createMessageThread(
+                    requiredText(input, "channelId"),
+                    requiredText(input, "messageId"),
+                    requiredText(input, "name")
+            );
+            case "timeout_member" -> gateway.get().timeoutMember(
+                    requiredText(input, "userId"),
+                    Instant.now().plusSeconds(durationSeconds(input))
+            );
+            case "clear_timeout" -> gateway.get().timeoutMember(
+                    requiredText(input, "userId"),
+                    null
+            );
+            default -> throw new IllegalArgumentException("unsupported Discord action " + claimed.action());
+        };
+    }
+
+    private static long durationSeconds(JsonNode input) {
+        JsonNode value = input.get("durationSeconds");
+        if (value == null || !value.isIntegralNumber()) {
+            throw new IllegalArgumentException("durationSeconds must be an integer between 1 and 86400");
+        }
+        long seconds = value.longValue();
+        if (seconds < 1 || seconds > 86_400) {
+            throw new IllegalArgumentException("durationSeconds must be between 1 and 86400");
+        }
+        return seconds;
     }
 
     private static String requiredText(JsonNode node, String fieldName) {

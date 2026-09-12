@@ -1,0 +1,49 @@
+{
+  "name": "@tjxjnoobie/community-agent",
+  "version": "0.2.0",
+  "description": "Java-owned Discord Manager with an npm installation and launcher layer.",
+  "type": "module",
+  "bin": {
+    "community-agent": "./bin/community-agent.mjs",
+    "discord-manager": "./bin/community-agent.mjs"
+  },
+  "files": [
+    "bin",
+    "runtime",
+    "runtime-manifest.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "package:runtime": "node scripts/package-runtime.mjs",
+    "test": "npm run package:runtime && node bin/community-agent.mjs doctor",
+    "check": "gradle --no-daemon check",
+    "prepack": "npm run package:runtime"
+  },
+  "dependencies": {
+    "@tjxjnoobie/strands-bridge": "github:tjXJNOOBIE/strands-bridge#34b2d0129d362edc10b9b540114e81a5cabf082f"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tjXJNOOBIE/Community-Agent.git"
+  },
+  "homepage": "https://github.com/tjXJNOOBIE/Community-Agent#readme",
+  "bugs": {
+    "url": "https://github.com/tjXJNOOBIE/Community-Agent/issues"
+  },
+  "keywords": [
+    "discord",
+    "agents",
+    "mcp",
+    "community-agent",
+    "java"
+  ]
+}

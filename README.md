@@ -40,7 +40,7 @@ The authoritative root Java runtime can:
 - expose observations to the agent as `untrusted_observation` data;
 - create signed, expiring proposals;
 - list and approve supported proposals through the operator surface;
-- execute the currently supported deterministic `send_message` action only after the approval boundary;
+- execute supported deterministic Discord actions only after the approval boundary: `send_message`, bot-authored `edit_message`, `add_reaction`, message `create_thread`, and bounded reversible `timeout_member`/`clear_timeout`;
 - expose separate authenticated `/mcp/agent` and `/mcp/operator` Streamable HTTP MCP endpoints through Tavall Function Catalog;
 - invoke Strands through the standalone `tjXJNOOBIE/strands-bridge` MCP runtime;
 - publish only the explicitly authorized Java Function Catalog view back to Strands;
@@ -50,12 +50,29 @@ The model-facing view is hard-limited to `community_observe` and `community_prop
 
 Broader Discord Manager behavior designed during the hackathon, including gateway-driven automation, additional moderation/events/support operations, subscription workers, and the former local TS dashboard/API, is preserved under `legacy/typescript/` as migration/reference evidence. That directory is **not** an authoritative product runtime. Useful behavior must be ported into the Java-owned architecture before it is claimed as current.
 
+## npm distribution
+
+The public product package is a thin launcher around the Java `installDist`
+artifact. It carries the Java runtime, verifies its manifest before launch, and
+resolves the pinned standalone Strands bridge as an npm dependency. It does not
+package the legacy TypeScript backend.
+
+```bash
+npm install @tjxjnoobie/community-agent
+npx @tjxjnoobie/community-agent doctor
+npx @tjxjnoobie/community-agent install --guild-id <discord-guild-id> --application-id <discord-application-id>
+npx @tjxjnoobie/community-agent serve
+```
+
+The package is prepared for public npm publication. The current registry has no
+published `@tjxjnoobie` scope, so the current clean-consumer evidence uses the
+versioned tarball produced by `npm pack`.
+
 ## Requirements
 
 - Java 25
 - Gradle 9.1+ for a source checkout
-- Node.js 22+ only for the standalone Strands bridge process
-- a built checkout/install of `tjXJNOOBIE/strands-bridge`
+- Node.js 22+ for the npm launcher and standalone Strands bridge process
 
 The Community Agent itself does not embed or import the Strands npm package.
 
@@ -98,6 +115,10 @@ export COMMUNITY_AGENT_STRANDS_ENTRYPOINT="/absolute/path/to/strands-bridge/dist
 The Java provider launches the bridge with an explicit sanitized environment. Product secrets such as the Discord bot token, operator token, and proposal-signing secret are not inherited by the Strands process by default.
 
 ## Install
+
+For a source checkout, `gradle installDist` creates the Java launcher. End users
+should use the npm package above; they do not need Gradle or a sibling bridge
+checkout.
 
 After `gradle installDist`, the generated application launcher is:
 
