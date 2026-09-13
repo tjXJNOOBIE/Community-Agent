@@ -8,7 +8,7 @@
       "date": "2026-09-13",
       "environment": "Tavall Cloud DEVELOPMENT; TavallMC development guild; disposable #dev-chat operation",
       "serviceProvider": "Discord API v10 through the Java Discord Manager gateway",
-      "sourceCommit": "PENDING_COMMUNITY_CAPTURE_COMMIT",
+      "sourceCommit": "06212a2c77b55396a6c02a60f5f246620e3f6f64",
       "artifactFilename": "02-community-real-discord.mp4",
       "artifactLocation": "/srv/workspace/tavall-pr-campaign.elxWjs/video-evidence/2026-09-13/02-community-real-discord.mp4",
       "artifactSha256": "94ae9a435f24cc9fb3c570f8dc1f2d3ddf7c69d4d75e7ab0d6fbcd7578337a52",
