@@ -90,7 +90,14 @@ public final class CommunityApplicationBootstrap {
                     new CommunityOperatorHandler(),
                     new CommunityAgentInvocationHandler()
             ));
-            CommunityMcpRuntime mcpRuntime = CommunityMcpRuntime.start(catalog, configuration, objectMapper);
+            CommunityMcpRuntime mcpRuntime = CommunityMcpRuntime.start(
+                    catalog,
+                    configuration,
+                    objectMapper,
+                    discordGateway,
+                    safeEnvironment.get("COMMUNITY_AGENT_DEMO_CHANNEL_ID"),
+                    safeEnvironment.get("COMMUNITY_AGENT_DEMO_CHANNEL_NAME")
+            );
             return new CommunityApplicationRuntime(mcpRuntime, strandsProvider);
         } catch (RuntimeException exception) {
             DependencyMap.getDependencyMap().removeDependency(CommunityDependencies.class);

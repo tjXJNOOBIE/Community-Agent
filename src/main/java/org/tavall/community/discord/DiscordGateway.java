@@ -12,6 +12,18 @@ public interface DiscordGateway {
 
     JsonNode currentUser();
 
+    default JsonNode readMessage(String channelId, String messageId) {
+        throw new UnsupportedOperationException("Discord message read-back is not supported by this gateway");
+    }
+
+    default JsonNode deleteMessage(String channelId, String messageId) {
+        throw new UnsupportedOperationException("Discord message cleanup is not supported by this gateway");
+    }
+
+    default JsonNode deleteThread(String threadId) {
+        throw new UnsupportedOperationException("Discord thread cleanup is not supported by this gateway");
+    }
+
     JsonNode sendMessage(String channelId, String content);
 
     default JsonNode editMessage(String channelId, String messageId, String content) {

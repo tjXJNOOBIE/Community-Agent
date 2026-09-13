@@ -156,6 +156,23 @@ Then validate the configured Discord boundary:
 
 Machine-readable doctor output is available with `doctor --json`.
 
+## Development chat demo
+
+When the runtime is bound to loopback, a development-only operator chat and
+proof surface can be enabled with a machine-selected test channel:
+
+```bash
+export COMMUNITY_AGENT_DEMO_CHANNEL_ID=<development-channel-id>
+export COMMUNITY_AGENT_DEMO_CHANNEL_NAME=<development-channel-name>
+./build/install/community-agent/bin/community-agent serve
+```
+
+Open `http://127.0.0.1:3210/demo`. The demo keeps the operator bearer token
+server-side, routes actions through the Java proposal/approval handlers, and
+reads resulting messages back through Discord REST. It is not registered on a
+non-loopback bind and is not a public Discord chatbot. Use only a disposable
+development channel and remove temporary messages/threads after a capture.
+
 ## Run
 
 Start the Java MCP/control runtime:
@@ -225,7 +242,14 @@ Community CI validates:
 
 The standalone bridge also independently runs `npm run check:real`, which exercises the real Strands SDK MCP client against a disposable MCP server.
 
-Model-backed reasoning, real Discord mutation, and development-guild acceptance still require their respective credentials/external systems and are not claimed merely because deterministic CI is green.
+Model-backed reasoning still requires its configured provider. A real
+development-guild acceptance run was completed against TavallMC and #dev-chat
+on 2026-09-13: Java observed the guild, formed and approved a post, edited the
+bot-authored message, added a reaction, created a temporary thread, read the
+message back from Discord REST, and removed the temporary objects afterward.
+The video artifact and hash are recorded in
+`docs/evidence/VIDEO_EVIDENCE_MANIFEST.json`. Message Content Intent remains a
+Discord Developer Portal configuration warning for this tenant.
 
 ## Legacy TypeScript migration evidence
 
@@ -245,6 +269,6 @@ Port useful behavior to Java, add production-equivalent Java tests, validate it,
 The current product design lives under `docs/community-agent/`. Progression/status documentation must distinguish accepted design from physically validated implementation.
 
 Shared engineering policy comes from current `TavallStudios/tavall-docs`, repository `AGENTS.md`, and canonical Tavall architecture tests. Current checked-in APIs win over remembered architecture shapes.
-- The required real Discord video is not claimed yet. The exact blocker and empty
-  artifact fields are recorded in docs/evidence/VIDEO_EVIDENCE_MANIFEST.json; no
-  simulated Discord footage is substituted.
+- The required real Discord video is recorded in
+  `docs/evidence/VIDEO_EVIDENCE_MANIFEST.json`; no simulated Discord footage is
+  substituted.

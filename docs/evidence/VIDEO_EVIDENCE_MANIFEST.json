@@ -1,22 +1,20 @@
 {
   "schemaVersion": 1,
   "agent": "Community / Discord Manager Agent",
-  "generatedAt": "2026-09-12T18:22:00Z",
+  "generatedAt": "2026-09-13T06:06:00Z",
   "entries": [
     {
-      "scenario": "Real Discord development-guild mutation workflow",
-      "date": "2026-09-12",
-      "environment": "Tavall Cloud DEVELOPMENT; no authorized Discord development guild and bot credentials available in this acceptance session",
-      "serviceProvider": "Discord API / development guild",
-      "sourceCommit": "a3c4fff42080de138cf0a755b45634955ac17921",
-      "artifactFilename": null,
-      "artifactLocation": null,
-      "artifactSha256": null,
-      "action": null,
-      "authoritativeVerification": null,
-      "classification": "UNEXECUTED",
-      "status": "BLOCKED",
-      "blockingReason": "A real Discord bot token, application, development guild, and dedicated test channel/users were not available. No mock or simulated footage is being claimed."
+      "scenario": "Operator chat to signed proposal, approval, Discord post/edit/reaction/thread, REST verification, and cleanup",
+      "date": "2026-09-13",
+      "environment": "Tavall Cloud DEVELOPMENT; TavallMC development guild; disposable #dev-chat operation",
+      "serviceProvider": "Discord API v10 through the Java Discord Manager gateway",
+      "sourceCommit": "PENDING_COMMUNITY_CAPTURE_COMMIT",
+      "artifactFilename": "02-community-real-discord.mp4",
+      "artifactLocation": "/srv/workspace/tavall-pr-campaign.elxWjs/video-evidence/2026-09-13/02-community-real-discord.mp4",
+      "artifactSha256": "94ae9a435f24cc9fb3c570f8dc1f2d3ddf7c69d4d75e7ab0d6fbcd7578337a52",
+      "action": "The browser operator chat called the Java demo route: Java observed TavallMC/#dev-chat, formed and approved a signed send_message proposal, edited the bot-authored message, added a checkmark reaction, created a temporary message thread, and displayed the resulting Discord state.",
+      "authoritativeVerification": "Discord REST read-back returned message 1548575184225828918 with the edited content, Tavall Bot author, one ✅ reaction, and the temporary thread ID. After recording, the message and thread both returned HTTP 404 and were removed from the development guild.",
+      "classification": "REAL"
     }
   ]
 }

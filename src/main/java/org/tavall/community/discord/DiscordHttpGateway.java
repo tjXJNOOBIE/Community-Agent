@@ -53,6 +53,35 @@ public final class DiscordHttpGateway implements DiscordGateway {
     }
 
     @Override
+    public JsonNode readMessage(String channelId, String messageId) {
+        return request(
+                "channels/" + encode(requireText(channelId, "channelId"))
+                        + "/messages/" + encode(requireText(messageId, "messageId")),
+                "GET",
+                null
+        );
+    }
+
+    @Override
+    public JsonNode deleteMessage(String channelId, String messageId) {
+        return request(
+                "channels/" + encode(requireText(channelId, "channelId"))
+                        + "/messages/" + encode(requireText(messageId, "messageId")),
+                "DELETE",
+                null
+        );
+    }
+
+    @Override
+    public JsonNode deleteThread(String threadId) {
+        return request(
+                "channels/" + encode(requireText(threadId, "threadId")),
+                "DELETE",
+                null
+        );
+    }
+
+    @Override
     public JsonNode sendMessage(String channelId, String content) {
         String safeChannelId = requireText(channelId, "channelId");
         String safeContent = requireText(content, "content");

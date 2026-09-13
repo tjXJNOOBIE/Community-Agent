@@ -17,6 +17,8 @@ import org.tavall.ai.core.catalog.AIFunctionCatalogView;
 import org.tavall.ai.mcp.server.AIFunctionMcpToolPublisher;
 import org.tavall.ai.mcp.server.JacksonMcpJsonMapper;
 import org.tavall.community.config.CommunityAgentConfiguration;
+import org.tavall.community.demo.CommunityDemoServlet;
+import org.tavall.community.discord.DiscordGateway;
 import org.tavall.community.http.CommunityHttpSecurityFilter;
 
 import java.io.IOException;
@@ -73,6 +75,17 @@ public final class CommunityMcpRuntime implements AutoCloseable {
             AIFunctionCatalog catalog,
             CommunityAgentConfiguration configuration,
             ObjectMapper objectMapper
+    ) {
+        return start(catalog, configuration, objectMapper, java.util.Optional.empty(), null, null);
+    }
+
+    public static CommunityMcpRuntime start(
+            AIFunctionCatalog catalog,
+            CommunityAgentConfiguration configuration,
+            ObjectMapper objectMapper,
+            java.util.Optional<DiscordGateway> discordGateway,
+            String demoChannelId,
+            String demoChannelName
     ) {
         AIFunctionCatalog safeCatalog = Objects.requireNonNull(catalog, "catalog");
         CommunityAgentConfiguration safeConfiguration = Objects.requireNonNull(configuration, "configuration");
@@ -139,6 +152,23 @@ public final class CommunityMcpRuntime implements AutoCloseable {
                 )
         );
         registerStatusServlet(context, safeConfiguration.guildId());
+        if (isLoopbackHost(safeConfiguration.web().host())
+                && demoChannelId != null && !demoChannelId.isBlank()
+                && demoChannelName != null && !demoChannelName.isBlank()) {
+            Tomcat.addServlet(
+                    context,
+                    "communityDemo",
+                    new CommunityDemoServlet(
+                            safeObjectMapper,
+                            discordGateway == null ? null : discordGateway.orElse(null),
+                            safeConfiguration.guildId(),
+                            demoChannelId,
+                            demoChannelName
+                    )
+            );
+            context.addServletMappingDecoded("/demo", "communityDemo");
+            context.addServletMappingDecoded("/demo/*", "communityDemo");
+        }
 
         try {
             tomcat.start();
@@ -347,5 +377,11 @@ public final class CommunityMcpRuntime implements AutoCloseable {
 
     private static String jsonEscape(String value) {
         return value.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+
+    private static boolean isLoopbackHost(String host) {
+        return "127.0.0.1".equalsIgnoreCase(host)
+                || "localhost".equalsIgnoreCase(host)
+                || "::1".equals(host);
     }
 }
