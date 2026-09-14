@@ -1,0 +1,68 @@
+{
+  "name": "@tjxjnoobie/community-agent",
+  "version": "0.1.0",
+  "description": "Discord Manager: a Strands-powered private control plane for operating Discord communities.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "community-agent": "./dist/cli/main.js",
+    "discord-manager": "./dist/cli/main.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "clean:build": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "clean:test": "node -e \"require('node:fs').rmSync('.test-dist',{recursive:true,force:true})\"",
+    "clean": "npm run clean:build && npm run clean:test",
+    "build": "npm run clean:build && tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run clean:test && tsc -p tsconfig.test.json && node --test \".test-dist/test/**/*.test.js\"",
+    "test:architecture": "npm run clean:test && tsc -p tsconfig.test.json && node --test \".test-dist/test/architecture/**/*.test.js\"",
+    "check": "npm run typecheck && npm run test && npm run build",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/node": "2.0.0",
+    "@modelcontextprotocol/server": "2.0.0",
+    "@tjxjnoobie/strands-bridge": "github:tjXJNOOBIE/strands-bridge#a3de4eb0fd784159e3fa8f52539aec350956b8df",
+    "discord.js": "14.27.0",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "5.8.3"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tjXJNOOBIE/Community-Agent.git"
+  },
+  "homepage": "https://github.com/tjXJNOOBIE/Community-Agent#readme",
+  "bugs": {
+    "url": "https://github.com/tjXJNOOBIE/Community-Agent/issues"
+  },
+  "keywords": [
+    "discord",
+    "strands-agents",
+    "agents",
+    "mcp",
+    "community-agent"
+  ]
+}

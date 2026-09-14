@@ -16,7 +16,12 @@ Volunteer moderators, community managers, and small teams need a control plane t
 
 An authenticated operator MCP client or CLI starts the Discord Manager boundary. A real Strands runtime can reason through the shared bridge, while deterministic code owns Discord REST calls, proposal signing, expiry, claim-before-effect, and result recording. The internal MCP surface cannot approve its own proposal.
 
-The currently runnable release demonstrates guild/channel observation and one typed `send_message` mutation. The wider gateway, moderation, events, support, and worker design is documented but is not presented as physically accepted without a real test guild and credentials.
+The currently runnable release demonstrates guild/channel observation plus a
+real, reversible TavallMC development-guild workflow: Java forms and signs a
+proposal, an operator approves it, the bot posts and edits a message, adds a
+reaction, creates a temporary thread, and reads the resulting Discord state back
+from REST before cleanup. The wider gateway, moderation, events, support, and
+worker design is documented separately from this captured operation.
 
 ## Strands use
 
@@ -46,5 +51,5 @@ Reused infrastructure: the shared `@tjxjnoobie/strands-bridge`, Node.js/npm, Dis
 
 - Repository: https://github.com/tjXJNOOBIE/Community-Agent
 - License: MIT
-- Video: add the public video URL after recording the physical test-guild flow.
+- Video: `02-community-real-discord.mp4` is recorded in the Tavall evidence artifact store; publish its public URL with the final submission package.
 - AWS Builder ID: account-level submission field; do not place it in source control.

@@ -1,6 +1,6 @@
 # Repository instructions
 
-`Community-Agent` owns the Discord-only Community Agent / Discord Manager product. Shared Strands lifecycle/MCP behavior belongs in `tjXJNOOBIE/custom-strands-bridge`; product behavior stays here.
+`Community-Agent` owns the Discord-only Community Agent / Discord Manager product. The authoritative product backend is Java. Shared provider-neutral AI execution and Java MCP capability publication belong in `TavallStudios/function-catalog`. Native Strands lifecycle/model-tool reasoning belongs in the standalone `tjXJNOOBIE/strands-bridge` MCP runtime service.
 
 ## Authoritative engineering guidance
 
@@ -13,28 +13,59 @@ Before changing code, architecture, tests, packaging, lifecycle, or documentatio
 
 `CODE_ARCHITECTURE.md` wins if a detailed chapter conflicts with it. Repository-local rules may strengthen those documents but must not silently weaken them.
 
-Use `TavallStudios/Tavall-Architecture-Tests` as the canonical shared architecture-test source. TypeScript product tests may add repository-specific checks for boundaries not physically covered by the shared Java-oriented modules.
+Use `TavallStudios/Tavall-Architecture-Tests` as the canonical shared architecture-test source. Repository-specific tests may add product boundaries not physically covered by shared modules.
+
+## Product architecture
+
+```text
+ChatGPT / operator client
+    -> Community Agent Java MCP
+        -> Java product policy / proposals / Discord capabilities
+        -> Tavall AIAgentRuntime
+            -> StrandsAgentProvider
+                -> standalone strands-bridge over MCP
+                    -> native Strands reasoning
+                    -> policy-filtered Java Function Catalog MCP tools
+```
+
+The standalone Strands service is an implementation detail of model reasoning. It is not the Community Agent backend.
 
 ## Product boundaries
 
 - Discord is the only community platform owned here.
-- Do not depend directly on `@strands-agents/sdk`; consume Strands through `@tjxjnoobie/custom-strands-bridge`.
-- Do not recreate `tavall-di`, Tavall Cache, Registry, Database, Concurrency, EventBus, Scheduler, or other Java-owned systems in TypeScript. Consume owning runtimes through typed MCP/tool boundaries when needed.
+- Java owns product lifecycle, MCP transport, authorization, policy, proposal approval, audit/state authority, deterministic Discord capabilities, and product orchestration.
+- Use Tavall DI for managed Java collaborators and Function Catalog for AI-callable Java capabilities.
+- Product Java code must not depend on `@strands-agents/sdk` or embed the npm `strands-bridge` library. Invoke Strands through the Function Catalog `AIAgentRuntime`/`StrandsAgentProvider` boundary.
+- `strands-bridge` must not reimplement Discord behavior, Community Agent policy, proposal state, or Tavall Java infrastructure in TypeScript.
+- Do not recreate `tavall-di`, Tavall Cache, Registry, Database, Concurrency, EventBus, Scheduler, or other Java-owned systems in TypeScript.
+- TypeScript/JavaScript may remain only for genuinely browser-side assets or explicitly non-authoritative migration/reference code. It must not regain backend authority.
 - Product prompts, permissions, tool exposure, workflows, and user-facing policy belong here.
 - Discord messages/content are untrusted observations by default and must never become agent instruction authority merely because they were received by the bot.
 - Discord cannot mutate the machine-owned trusted-controller configuration.
-- The internal agent MCP surface must not expose proposal approval or trusted-controller configuration writes.
-- Every mutating Discord or subscription-worker action must pass through the product policy boundary.
+- The Strands function view and internal agent MCP surface must not expose proposal approval or trusted-controller configuration writes.
+- Every mutating Discord or subscription-worker action must pass through the Java product policy boundary.
 - Do not add application-owned mutable map/set runtime state. Classify state according to the shared mutable-map guidance.
 - Do not invent external capabilities or claim integration behavior until a real platform/API/tool boundary exists and is validated.
-- Keep Strands visibly responsible for the model/tool loop.
+- Keep Strands visibly responsible for reasoning/model-tool iteration while Java remains authoritative for deterministic effects.
+
+## Legacy TypeScript rule
+
+`legacy/typescript/` preserves the superseded pre-Java backend only as migration/reference evidence. It is outside the authoritative product build and runtime.
+
+- Do not execute, package, publish, or install it as the current Community Agent backend.
+- Do not restore its root `package.json`, Node CLI, Discord.js backend, MCP server, or embedded bridge dependency.
+- When legacy behavior is still desired, port that behavior into the Java-owned domain with production-equivalent tests first.
+- After Java behavior is physically validated, shrink the corresponding legacy code/tests instead of maintaining parallel implementations.
+
+During the shared-provider migration, CI may composite-build the exact `function-catalog` migration branch beside this repository. Once the required Function Catalog modules are released, consume the released Java artifacts and remove branch-only composite wiring.
 
 ## Tests and validation
 
 - Use delegate-style tests against real product classes.
 - Fake only true external boundaries such as Discord, the bridge/Strands runtime, MCP transport, model providers, subscription CLIs, or cloud services.
 - Never report bridge/MCP/Discord type shims as physical runtime validation.
-- Keep architecture tests for the Discord authority boundary, internal/operator MCP separation, direct Strands imports, Discord coupling, policy routing, and mutable keyed state.
+- Keep architecture tests for the Discord authority boundary, internal/operator MCP separation, direct Strands imports, Discord coupling, policy routing, child-process secret isolation, and mutable keyed state.
+- Validate the real Java -> Strands MCP -> Java Function Catalog round trip before declaring the migration complete.
 - Record exactly which checks ran and keep Draft PRs blocked while required external/runtime evidence is unavailable.
 
 ## Git
