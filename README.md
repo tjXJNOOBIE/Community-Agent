@@ -4,7 +4,7 @@
 
 Discord Manager is a Strands-powered control plane for operating one Discord community from an authenticated MCP client or CLI. Community messages are observations, not instructions; deterministic policy owns trust, proposals, approvals, and Discord mutations.
 
-[Hackathon submission](HACKATHON_SUBMISSION.md) · [Demo runbook](DEMO_RUNBOOK.md) · [Architecture](docs/ARCHITECTURE.svg) · [Source](https://github.com/tjXJNOOBIE/Community-Agent)
+[Hackathon submission](HACKATHON_SUBMISSION.md) · [Demo runbook](DEMO_RUNBOOK.md) · [Architecture](docs/ARCHITECTURE.svg) · [Safety boundary](docs/SAFETY_BOUNDARY.svg) · [Source](https://github.com/tjXJNOOBIE/Community-Agent)
 
 ![Discord Manager architecture](docs/ARCHITECTURE.svg)
 
@@ -54,6 +54,8 @@ The internal MCP surface can inspect and propose. It cannot approve its own prop
 ## Bounded by design
 
 Discord Manager intentionally keeps the model away from raw Discord authority.
+
+![Discord Manager safety boundary](docs/SAFETY_BOUNDARY.svg)
 
 - Ordinary Discord messages are untrusted observations by default.
 - Trusted Discord prompting is disabled unless machine/operator configuration explicitly enables it.
@@ -169,6 +171,7 @@ Physical Discord mutation and model-backed Strands invocation require a real dev
 - [`HACKATHON_SUBMISSION.md`](HACKATHON_SUBMISSION.md) contains the hackathon framing and pre-existing-component disclosure.
 - [`DEMO_RUNBOOK.md`](DEMO_RUNBOOK.md) contains the authenticated MCP and physical Discord acceptance path.
 - [`docs/ARCHITECTURE.svg`](docs/ARCHITECTURE.svg) shows the operator/agent/policy boundary.
+- [`docs/SAFETY_BOUNDARY.svg`](docs/SAFETY_BOUNDARY.svg) shows the observation, trust, and mutation boundary.
 - [`docs/community-agent/COMMUNITY_AGENT_FINAL_DRAFT.md`](docs/community-agent/COMMUNITY_AGENT_FINAL_DRAFT.md) documents the broader reviewed design.
 
 The project is released under the [MIT License](LICENSE).
