@@ -132,7 +132,7 @@ When `serve` is running:
 
 Both MCP endpoints require their generated bearer tokens and negotiate MCP protocol version `2025-11-25`.
 
-For remote browser or ChatGPT Web MCP access, keep the daemon on loopback and terminate TLS/authentication at a trusted proxy or tunnel. Remote hosts and browser origins are exact allowlists, not wildcard vibes disguised as security.
+For remote browser or ChatGPT Web MCP access, keep the daemon on loopback and terminate TLS/authentication at a trusted proxy or tunnel. Remote hosts and browser origins are exact allowlists.
 
 ## Autonomy model
 
